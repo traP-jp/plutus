@@ -1,0 +1,15 @@
+[submodule "system/cornucopia"]
+	path = system/cornucopia
+	url = https://github.com/traP-jp/cornucopia
+[submodule "system/pteron/client"]
+	path = system/pteron/client
+	url = https://github.com/traP-jp/pteron-client
+[submodule "system/pteron/server"]
+	path = system/pteron/server
+	url = https://github.com/traP-jp/pteron-server
+[submodule "examples/hermes"]
+	path = examples/hermes
+	url = https://github.com/traP-jp/hermes
+[submodule "examples/sisyphus"]
+	path = examples/sisyphus
+	url = https://github.com/traP-jp/sisyphus
