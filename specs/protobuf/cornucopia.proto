@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/traP-jp/plutus";
+option go_package = "github.com/traP-jp/plutus/api/protobuf;cornucopia";
 option java_multiple_files = true;
 option java_package = "jp.trap.plutus";
 option java_outer_classname = "Plutus";
@@ -9,14 +9,61 @@ package plutus;
 
 import "google/protobuf/timestamp.proto";
 
-service Cornucopia {
-  rpc Ping (Request) returns (Response) {}
+service CornucopiaService {
+  rpc CreateAccount (CreateAccountRequest) returns (CreateAccountResponse) {}
+  rpc GetAccount (GetAccountRequest) returns (GetAccountResponse) {}
+  rpc Transfer (TransferRequest) returns (TransferResponse) {}
+  rpc GetTransactions (GetTransactionsRequest) returns (GetTransactionsResponse) {}
 }
 
-message Request {
-  google.protobuf.Timestamp date = 1;
+message CreateAccountRequest {
+  string owner_id = 1; // User or Project ID from Dashboard
 }
 
-message Response {
-  google.protobuf.Timestamp latency = 1;
+message CreateAccountResponse {
+  string account_id = 1;
+  string owner_id = 2;
+  int64 balance = 3;
+}
+
+message GetAccountRequest {
+  string account_id = 1;
+}
+
+message GetAccountResponse {
+  string account_id = 1;
+  string owner_id = 2;
+  int64 balance = 3;
+}
+
+message TransferRequest {
+  string from_account_id = 1;
+  string to_account_id = 2;
+  int64 amount = 3;
+  string description = 4;
+  string idempotency_key = 5;
+}
+
+message TransferResponse {
+  string transaction_id = 1;
+  int64 created_at = 2; // Unix timestamp
+}
+
+message GetTransactionsRequest {
+  string account_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetTransactionsResponse {
+  repeated Transaction transactions = 1;
+}
+
+message Transaction {
+  string transaction_id = 1;
+  string from_account_id = 2;
+  string to_account_id = 3;
+  int64 amount = 4;
+  string description = 5;
+  google.protobuf.Timestamp created_at = 6;
 }
