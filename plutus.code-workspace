@@ -1,0 +1,25 @@
+{
+    "folders": [
+        {
+            "name": "Pteron Client",
+            "path": "system/pteron/client"
+        },
+        {
+            "name": "Pteron Server",
+            "path": "system/pteron/server"
+        },
+        {
+            "name": "Cornucopia",
+            "path": "system/cornucopia"
+        },
+        {
+            "name": "Examples",
+            "path": "examples"
+        },
+        {
+            "name": "Plutus",
+            "path": "."
+        }
+    ],
+    "settings": {}
+}
