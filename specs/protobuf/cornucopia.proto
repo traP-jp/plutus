@@ -18,5 +18,5 @@ message Request {
 }
 
 message Response {
-  google.protobuf.Timestamp latency = 1;
+  int64 latency = 1;
 }
