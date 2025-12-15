@@ -17,6 +17,10 @@
             "path": "examples"
         },
         {
+            "name": "Specs",
+            "path": "specs"
+        },
+        {
             "name": "Plutus",
             "path": "."
         }
