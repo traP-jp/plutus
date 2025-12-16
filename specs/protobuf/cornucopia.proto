@@ -13,17 +13,19 @@ service CornucopiaService {
   rpc CreateAccount (CreateAccountRequest) returns (CreateAccountResponse) {}
   rpc GetAccount (GetAccountRequest) returns (GetAccountResponse) {}
   rpc Transfer (TransferRequest) returns (TransferResponse) {}
-  rpc GetTransactions (GetTransactionsRequest) returns (GetTransactionsResponse) {}
+  rpc GetJournalEntries (GetJournalEntriesRequest) returns (GetJournalEntriesResponse) {}
 }
 
 message CreateAccountRequest {
   string owner_id = 1; // User or Project ID from Dashboard
+  bool can_overdraft = 2; // Whether the account can go negative
 }
 
 message CreateAccountResponse {
   string account_id = 1;
   string owner_id = 2;
   int64 balance = 3;
+  bool can_overdraft = 4;
 }
 
 message GetAccountRequest {
@@ -34,6 +36,7 @@ message GetAccountResponse {
   string account_id = 1;
   string owner_id = 2;
   int64 balance = 3;
+  bool can_overdraft = 4;
 }
 
 message TransferRequest {
@@ -45,22 +48,22 @@ message TransferRequest {
 }
 
 message TransferResponse {
-  string transaction_id = 1;
-  int64 created_at = 2; // Unix timestamp
+  string journal_entry_id = 1;
+  google.protobuf.Timestamp created_at = 2;
 }
 
-message GetTransactionsRequest {
+message GetJournalEntriesRequest {
   string account_id = 1;
   int32 limit = 2;
   int32 offset = 3;
 }
 
-message GetTransactionsResponse {
-  repeated Transaction transactions = 1;
+message GetJournalEntriesResponse {
+  repeated JournalEntry journal_entries = 1;
 }
 
-message Transaction {
-  string transaction_id = 1;
+message JournalEntry {
+  string journal_entry_id = 1;
   string from_account_id = 2;
   string to_account_id = 3;
   int64 amount = 4;
