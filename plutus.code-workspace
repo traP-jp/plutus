@@ -13,10 +13,6 @@
             "path": "system/cornucopia"
         },
         {
-            "name": "Examples",
-            "path": "examples"
-        },
-        {
             "name": "Specs",
             "path": "specs"
         },
