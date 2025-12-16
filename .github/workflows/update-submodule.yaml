@@ -23,7 +23,7 @@ jobs:
 
       - name: Check git status
         id: status
-        run: echo "status=$(git status -s)" >> $GITHUB_OUTPUT
+        run: echo "status=$(git status -s | tr "\n" "\r")" >> $GITHUB_OUTPUT
 
       - name: Commit
         if: ${{ steps.status.outputs.status }}
