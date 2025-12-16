@@ -1,0 +1,48 @@
+name: Sync Labels
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/labels.yml"
+  workflow_dispatch:
+
+jobs:
+  sync-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Convert YAML to JSON
+        id: convert
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq -o=json '.github/labels.yml' > labels.json
+
+      - name: Sync Labels to Repositories
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_LABEL_PAT }}
+        run: |
+          # 対象リポジトリのリスト（ユーザー名/レポ名）
+          REPOS=(
+            traP-jp/plutus
+            traP-jp/pteron-server
+            traP-jp/pteron-client
+            traP-jp/cornucopia
+            traP-jp/plutus-examples 
+            traP-jp/sisyphus
+            traP-jp/hermes
+          )
+
+          # npmパッケージの github-label-sync を使って一括同期
+          for repo in "${REPOS[@]}"; do
+            echo "Syncing labels for $repo..."
+            npx github-label-sync --access-token $GITHUB_TOKEN --labels labels.json --allow-added-labels "$repo"
+          done
