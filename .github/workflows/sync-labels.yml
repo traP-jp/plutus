@@ -7,6 +7,12 @@ on:
     paths:
       - ".github/labels.yml"
   workflow_dispatch:
+    inputs:
+      allow_delete:
+        description: "Allow deletion of existing labels not in the YAML"
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   sync-labels:
@@ -29,20 +35,32 @@ jobs:
       - name: Sync Labels to Repositories
         env:
           GITHUB_TOKEN: ${{ secrets.GH_LABEL_PAT }}
+          ALLOW_DELETE: ${{ inputs.allow_delete }}
         run: |
-          # 対象リポジトリのリスト（ユーザー名/レポ名）
+          # Target repositories (owner/repo)
           REPOS=(
             traP-jp/plutus
             traP-jp/pteron-server
             traP-jp/pteron-client
             traP-jp/cornucopia
-            traP-jp/plutus-examples 
+            traP-jp/plutus-examples
             traP-jp/sisyphus
             traP-jp/hermes
           )
 
-          # npmパッケージの github-label-sync を使って一括同期
+          # Default behavior: "Add/Edit only" (preserve extra labels on the repo)
+          SYNC_OPTS="--allow-added-labels"
+
+          # If manually triggered with allow_delete=true, enable destructive sync
+          if [ "$ALLOW_DELETE" == "true" ]; then
+            echo "[WARNING] Delete mode enabled. Labels not in YAML will be removed."
+            SYNC_OPTS=""
+          else
+            echo "[INFO] Safe mode. Existing labels will be preserved."
+          fi
+
+          # Execute sync
           for repo in "${REPOS[@]}"; do
             echo "Syncing labels for $repo..."
-            npx github-label-sync --access-token $GITHUB_TOKEN --labels labels.json --allow-added-labels "$repo"
+            npx github-label-sync --access-token $GITHUB_TOKEN --labels labels.json $SYNC_OPTS "$repo"
           done
