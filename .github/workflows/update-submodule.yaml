@@ -1,0 +1,39 @@
+name: Update Submodule
+
+on:
+  repository_dispatch:
+    types:
+      - update
+
+  workflow_dispatch:
+
+jobs:
+  update_submodule:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Update submodule
+        run: git submodule update --remote
+
+      - name: Check git status
+        id: status
+        run: echo "status=$(git status -s)" >> $GITHUB_OUTPUT
+
+      - name: Commit
+        if: ${{ steps.status.outputs.status }}
+        run: |
+          git config --local user.name "Github Actions"
+          git config --local user.email "action@github.com"
+          git add .
+          git status
+          git commit -m "Update submodule"
+
+      - name: Push
+        uses: ad-m/github-push-action@master
+        with:
+          branch: main
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ steps.status.outputs.status }}
