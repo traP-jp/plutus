@@ -1,0 +1,39 @@
+name: "Chore"
+description: "ビルド設定、依存関係の更新、ドキュメント修正など、製品コード以外の変更"
+title: "[Chore] "
+labels: ["type/chore", "need/triage"]
+body:
+  - type: textarea
+    id: overview
+    attributes:
+      label: "Overview"
+      description: "どのような作業を行うか"
+      placeholder: |
+        アイコンライブラリ (例: lucide-react) を最新版にアップデートする
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: "Impact"
+      description: "この変更による影響範囲やリスク"
+      placeholder: |
+        ハートアイコンのsvgパス名が変わっている可能性があり、いいねボタンの表示が崩れるリスクがある。
+
+  - type: textarea
+    id: dev-tasks
+    attributes:
+      label: "Tasks"
+      description: "具体的な作業内容"
+      placeholder: |
+        - [ ] npm update lucide-react
+        - [ ] いいねボタンの表示確認
+        - [ ] その他アイコンの表示確認
+
+  - type: textarea
+    id: references
+    attributes:
+      label: "References"
+      description: "関連情報や関連issue等あれば"
+      placeholder: |
+        - #1234
+        - traP-jp/plutus#123456

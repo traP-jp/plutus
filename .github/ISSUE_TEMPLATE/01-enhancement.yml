@@ -1,0 +1,40 @@
+name: "Enhancement"
+description: "新しい機能や既存機能の改善を提案"
+title: "[Enhancement] "
+labels: ["type/enhancement", "need/triage"]
+body:
+  - type: textarea
+    id: overview
+    attributes:
+      label: "Overview"
+      description: "どのような機能改善をしたいか、簡潔な概要"
+      placeholder: |
+        記事詳細ページに「いいね」ボタンを実装する
+
+  - type: textarea
+    id: dev-tasks
+    attributes:
+      label: "Tasks"
+      description: "実装に必要なタスク"
+      placeholder: |
+        - [ ] components/Article/LikeButton.tsx のUI作成
+        - [ ] APIつなぎ込み (POST /api/likes)
+        - [ ] Optimistic UI（即座にカウントアップする挙動）の実装
+
+  - type: textarea
+    id: details
+    attributes:
+      label: "Details"
+      description: "補足したい背景・検討内容・設計メモなど"
+      placeholder: |
+        未ログインユーザーが押した場合は、ログインモーダルを表示する仕様にする。
+        ハートのアニメーションはFramer Motionを使用予定。
+
+  - type: textarea
+    id: references
+    attributes:
+      label: "References"
+      description: "関連情報や関連issue等あれば"
+      placeholder: |
+        - #1234
+        - traP-jp/plutus#123456
