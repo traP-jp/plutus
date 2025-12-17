@@ -1,0 +1,56 @@
+name: "Refactoring"
+description: "ユーザーから見える動作は変えずに、コードの品質を向上させるための提案"
+title: "[Refactor] "
+labels: ["type/refactoring", "need/triage"]
+body:
+  - type: textarea
+    id: overview
+    attributes:
+      label: "Overview"
+      description: "どの部分のコードをどのように改善したいか、簡潔な概要"
+      placeholder: |
+        LikeButtonコンポーネント内のAPI通信ロジックをカスタムフックに切り出す
+
+  - type: textarea
+    id: reason
+    attributes:
+      label: "Reason"
+      description: "なぜ、改善したいのか（保守性、可読性、パフォーマンス等）"
+      placeholder: |
+        コンポーネント内にfetch処理が直書きされており、一覧ページでの再利用が難しいため。
+
+  - type: textarea
+    id: suggested-fix
+    attributes:
+      label: "Proposed Changes"
+      description: "どのようにコードを変更する予定か"
+      placeholder: |
+        `hooks/useLike.ts` を作成し、状態管理とAPIコールを移行する。
+        PresentationalコンポーネントとしてUI部分だけを分離する。
+
+  - type: textarea
+    id: dev-tasks
+    attributes:
+      label: "Tasks"
+      description: "必要ならタスクを分割"
+      placeholder: |
+        - [ ] hooks/useLike.ts の作成
+        - [ ] LikeButton.tsx の修正
+        - [ ] 記事一覧のカードコンポーネントにも適用
+
+  - type: textarea
+    id: details
+    attributes:
+      label: "Details"
+      description: "その他補足情報"
+      placeholder: |
+        一覧ページの実装(#25)の前にやっておきたい。
+
+  - type: textarea
+    id: references
+    attributes:
+      label: "References"
+      description: "関連情報や関連issue等あれば"
+      placeholder: |
+        - #1234
+        - traP-jp/plutus#123456
