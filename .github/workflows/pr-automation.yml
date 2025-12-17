@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   setup-pr:
-    if: github.repository == 'traP-jp/mikke'
     timeout-minutes: 3
     runs-on: ubuntu-latest
     steps:
