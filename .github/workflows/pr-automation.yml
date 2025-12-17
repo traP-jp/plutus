@@ -1,0 +1,159 @@
+name: PR Automation
+
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  pull-requests: write
+  issues: read
+
+jobs:
+  setup-pr:
+    if: github.repository == 'traP-jp/mikke'
+    timeout-minutes: 3
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Validate Branch Name
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BRANCH_NAME: ${{ github.head_ref }}
+          # リポジトリ変数から正規表現を読み込む
+          # 未設定の場合のデフォルト値
+          VALID_BRANCH_REGEX: ${{ vars.VALID_BRANCH_REGEX || '^(feature|fix|refactor|chore|docs|hotfix|dependencies)/([0-9]+)-[a-zA-Z0-9-]+$' }}
+        run: |
+          # revertブランチやdependabotブランチはチェック対象外にする
+          if [[ "$BRANCH_NAME" == revert-* || "$BRANCH_NAME" == dependabot/* ]]; then
+            echo "Branch name '$BRANCH_NAME' is excluded from validation."
+            exit 0
+          fi
+
+          # 正規表現でブランチ名を検証
+          if [[ ! "$BRANCH_NAME" =~ $VALID_BRANCH_REGEX ]]; then
+            # 警告メッセージを作成
+            # このヘッダーを冪等性チェックのキーとして使用
+            COMMENT_HEADER="⚠️ **ブランチ名の命名規則に関するお知らせ**"
+            MESSAGE_BODY="ブランチ名 \`$BRANCH_NAME\` は、プロジェクトで推奨されている命名規則と一致しない可能性があります。
+            もしこのブランチ名が意図的なものであれば、このメッセージは無視していただいて問題ありません。
+
+            <details>
+            <summary>推奨される命名規則と具体例</summary>
+
+            #### **推奨フォーマット**
+            一貫性を保ち、履歴を追いやすくするため、以下のフォーマットを推奨しています。
+            \`\`\`
+            <type>/<issue-number>-<description>
+            \`\`\`
+
+            #### **具体例**
+            - \`feature/123-add-login-page\`
+            - \`fix/456-correct-button-color\`
+            - \`refactor/789-optimize-database-queries\`
+            - \`chore/101-update-dependencies\`
+
+            </details>"
+            
+            MESSAGE="${COMMENT_HEADER}\n\n${MESSAGE_BODY}"
+
+            # 既存のコメントをチェックして冪等性を担保
+            echo "Checking for existing warning comment..."
+            EXISTING_COMMENTS_JSON=$(gh pr view "$PR_NUMBER" --json comments --jq '.comments')
+            COMMENT_EXISTS=$(echo "$EXISTING_COMMENTS_JSON" | jq --arg header "$COMMENT_HEADER" 'any(.[] | .body | startswith($header))')
+
+            if [[ "$COMMENT_EXISTS" == "true" ]]; then
+              echo "Branch name warning comment already exists. Skipping."
+            else
+              # PRにコメントを投稿
+              gh pr comment "$PR_NUMBER" --body "$MESSAGE"
+              echo "Warning comment posted to PR #${PR_NUMBER}."
+            fi
+          else
+            echo "Branch name is valid."
+          fi
+
+      - name: Extract issue number from branch name
+        id: extract_issue
+        run: |
+          BRANCH_NAME="${{ github.head_ref }}"
+          if [[ $BRANCH_NAME =~ ^[a-zA-Z0-9]+/([0-9]+)- ]]; then
+            ISSUE_NUMBER=${BASH_REMATCH[1]}
+            echo "Issue number extracted: $ISSUE_NUMBER"
+            echo "issue_number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
+          else
+            echo "Branch name '${BRANCH_NAME}' does not follow the expected format '<prefix>/<number>-<description>'. Skipping issue extraction."
+            echo "issue_number=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update PR Description
+        if: steps.extract_issue.outputs.issue_number
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          ISSUE_NUMBER: ${{ steps.extract_issue.outputs.issue_number }}
+          REPO: ${{ github.repository }}
+        run: |
+          CURRENT_BODY=$(gh pr view "$PR_NUMBER" --json body --jq .body)
+
+          if [[ "$CURRENT_BODY" == *"#${ISSUE_NUMBER}"* ]]; then
+            echo "PR body already contains '#${ISSUE_NUMBER}'. No update needed."
+            exit 0
+          fi
+
+          CLOSES_TEXT="Closes #${ISSUE_NUMBER}"
+
+          if [ -z "$CURRENT_BODY" ]; then
+            UPDATED_BODY="$CLOSES_TEXT"
+          else
+            UPDATED_BODY="$(printf '%s\n\n---\n%s' "$CURRENT_BODY" "$CLOSES_TEXT")"
+          fi
+
+          echo "Updating PR #${PR_NUMBER} body."
+          gh pr edit "$PR_NUMBER" --body "$UPDATED_BODY"
+
+      - name: Add labels from issue
+        if: steps.extract_issue.outputs.issue_number
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          ISSUE_NUMBER: ${{ steps.extract_issue.outputs.issue_number }}
+          TARGET_LABEL_PATTERN: "^(type|area|priority)/"
+        run: |
+          ISSUE_LABELS=$(gh issue view "$ISSUE_NUMBER" --json labels --jq '[.labels[].name] | join(",")')
+
+          if [ -z "$ISSUE_LABELS" ]; then
+            echo "No labels found on issue #${ISSUE_NUMBER}. Skipping."
+            exit 0
+          fi  
+
+          ISSUE_LABELS_LINES=$(echo "$ISSUE_LABELS" | tr ',' '\n')
+
+          FILTERED_LABELS=$(echo "$ISSUE_LABELS_LINES" | grep -E "$TARGET_LABEL_PATTERN" || true)
+
+          TARGET_LABELS=$(echo "$FILTERED_LABELS" | tr '\n' ',' | sed 's/,$//')
+
+          if [ -z "$TARGET_LABELS" ]; then
+            echo "No target labels (matching '${TARGET_LABEL_PATTERN}') found on issue #${ISSUE_NUMBER}. Skipping."
+          else
+            echo "Adding labels ($TARGET_LABELS) from issue #${ISSUE_NUMBER} to PR #${PR_NUMBER}."
+            gh pr edit "$PR_NUMBER" --add-label "$TARGET_LABELS"
+          fi
+
+      - name: Add event actor to assignees
+        if: endsWith(github.actor, '[bot]') == false
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          ASSIGNEE_COUNT=$(gh pr view "$PR_NUMBER" --json assignees --jq '(.assignees | length)')
+
+          if [ "$ASSIGNEE_COUNT" -eq 0 ]; then
+            echo "No assignees found. Assigning the author: ${{ github.actor }}"
+            gh pr edit "$PR_NUMBER" --add-assignee "${{ github.actor }}"
+          else
+            echo "This PR already has $ASSIGNEE_COUNT assignee(s). Skipping."
+          fi
