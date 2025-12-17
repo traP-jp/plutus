@@ -1,0 +1,517 @@
+openapi: 3.1.0
+info:
+  title: Pteron Internal API
+  version: 1.0.0
+  description: |
+    ダッシュボードおよびフロントエンド向けの内部API。
+servers:
+  - url: /api/internal
+components:
+  securitySchemes:
+    ForwardAuth:
+      type: apiKey
+      in: header
+      name: X-Forwarded-User
+      description: プロキシが付与するユーザーIDヘッダー
+
+  schemas:
+    User:
+      type: object
+      description: ユーザー
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: traP ID
+        balance:
+          type: integer
+          format: int64
+          description: 現在の残高
+
+    Project:
+      type: object
+      description: プロジェクト
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        owner_id:
+          type: string
+          format: uuid
+        admin_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: プロジェクト管理者のユーザーID一覧
+        balance:
+          type: integer
+          format: int64
+
+    Transaction:
+      type: object
+      description: 完了した取引
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [TRANSFER, BILL_PAYMENT]
+          description: |
+            取引の種類
+            - TRANSFER: プロジェクトからユーザーへの送金 (Project -> User)
+            - BILL_PAYMENT: プロジェクトへの請求の支払い (User -> Project)
+        amount:
+          type: integer
+          format: int64
+        project_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    Bill:
+      type: object
+      description: 請求
+      properties:
+        id:
+          type: string
+          format: uuid
+        amount:
+          type: integer
+          format: int64
+        user_id:
+          type: string
+          format: uuid
+          description: 請求対象のユーザーID
+        description:
+          type: string
+        project_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [PENDING, COMPLETED, REJECTED, FAILED]
+        created_at:
+          type: string
+          format: date-time
+
+    APIClient:
+      type: object
+      description: APIクライアント
+      properties:
+        client_id:
+          type: string
+        client_secret:
+          type: string
+          description: 作成時のみ返却される
+        created_at:
+          type: string
+          format: date-time
+
+security:
+  - ForwardAuth: []
+
+paths:
+  # --- Me (Personal Context) ---
+  /me:
+    get:
+      tags: [Me]
+      summary: 自分の情報を取得
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /me/transactions:
+    get:
+      tags: [Me]
+      summary: 自分の取引履歴を取得
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: cursor
+          in: query
+          schema:
+            type: string
+            description: |
+              続きを取得するためのカーソル
+              前回のレスポンスの next_cursor に含まれる値を指定します。
+              初回リクエスト時は未指定とします。
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Transaction'
+                  next_cursor:
+                    type: string
+                    description: 次のページを取得するためのカーソル
+
+  /me/bills/{bill_id}:
+    get:
+      tags: [Me]
+      summary: 請求の詳細を取得
+      parameters:
+        - name: bill_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bill'
+
+  /me/bills/{bill_id}/approve:
+    post:
+      tags: [Me]
+      summary: 請求を承認して支払いを実行する
+      description: 成功した場合、プロジェクトが指定したリダイレクトURLを返す
+      parameters:
+        - name: bill_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 支払い完了
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  redirect_url:
+                    type: string
+                    format: uri
+        '400':
+          description: 残高不足など
+        '409':
+          description: 既に処理済み
+
+  /me/bills/{bill_id}/decline:
+    post:
+      tags: [Me]
+      summary: 請求を拒否する
+      parameters:
+        - name: bill_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 拒否完了
+        '409':
+          description: 既に処理済み
+
+  /me/projects:
+    get:
+      tags: [Me]
+      summary: 自分がオーナーまたは管理者のプロジェクト一覧
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+
+  # --- Users (Public Context) ---
+  /users:
+    get:
+      tags: [Users]
+      summary: 全ユーザー一覧を取得
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: cursor
+          in: query
+          schema:
+            type: string
+            description: |
+              続きを取得するためのカーソル
+              前回のレスポンスの next_cursor に含まれる値を指定します。
+              初回リクエスト時は未指定とします。
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  next_cursor:
+                    type: string
+                    description: 次のページを取得するためのカーソル (存在しない場合は未設定)
+
+  /leaderboard/{category}:
+    get:
+      tags: [Users]
+      summary: 指定したカテゴリのランキングを取得
+      description: 指定されたカテゴリに基づいたユーザーランキングを返します
+      parameters:
+        - name: category
+          in: path
+          required: true
+          description: |
+            ランキングの集計種別
+            - balance: 現在の所持金残高順
+          schema:
+            type: string
+            enum: [balance]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: cursor
+          in: query
+          schema:
+            type: string
+            description: |
+              続きを取得するためのカーソル
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  next_cursor:
+                    type: string
+                    description: 次のページを取得するためのカーソル (存在しない場合は未設定)
+
+  # --- Projects (Admin Context) ---
+  /projects:
+    get:
+      tags: [Projects]
+      summary: 全プロジェクト一覧を取得
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: cursor
+          in: query
+          schema:
+            type: string
+            description: |
+              続きを取得するためのカーソル
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Project'
+                  next_cursor:
+                    type: string
+                    description: 次のページを取得するためのカーソル
+    post:
+      tags: [Projects]
+      summary: プロジェクトを新規作成
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+
+  /projects/{project_id}:
+    get:
+      tags: [Projects]
+      summary: プロジェクト詳細
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+
+  /projects/{project_id}/admins:
+    get:
+      tags: [Projects]
+      summary: プロジェクト管理者一覧を取得
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      tags: [Projects]
+      summary: プロジェクト管理者を追加
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id]
+              properties:
+                user_id:
+                  type: string
+                  format: uuid
+      responses:
+        '204':
+          description: Added
+
+  /projects/{project_id}/admins/{user_id}:
+    delete:
+      tags: [Projects]
+      summary: プロジェクト管理者を削除
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Deleted
+
+  /projects/{project_id}/clients:
+    get:
+      tags: [Projects]
+      summary: APIクライアント一覧
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/APIClient'
+    post:
+      tags: [Projects]
+      summary: APIクライアントを新規発行
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Created (Secretはここでしか表示しない)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIClient'
+
+  /projects/{project_id}/clients/{client_id}:
+    delete:
+      tags: [Projects]
+      summary: APIクライアントを削除（無効化）
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: client_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Deleted
