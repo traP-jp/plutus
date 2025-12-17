@@ -255,3 +255,89 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Bill'
+
+webhooks:
+  bill.completed:
+    post:
+      tags: [Webhooks]
+      summary: 請求完了通知
+      description: |
+        ユーザーが請求の支払いを完了した際、登録されたWebhook URLにPOSTリクエストが送信されます。
+        この通知を受け取った後、サービスのロジック（アイテム付与など）を実行してください。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event, bill, occurred_at]
+              properties:
+                event:
+                  type: string
+                  enum: [bill.completed]
+                  description: イベント種別
+                bill:
+                  $ref: '#/components/schemas/Bill'
+                occurred_at:
+                  type: string
+                  format: date-time
+                  description: イベント発生日時
+      responses:
+        '200':
+          description: Webhook受信確認 (サーバーは200 OKを返却する必要があります)
+
+  bill.rejected:
+    post:
+      tags: [Webhooks]
+      summary: 請求拒否通知
+      description: |
+        ユーザーが請求を拒否（キャンセル）した際、登録されたWebhook URLにPOSTリクエストが送信されます。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event, bill, occurred_at]
+              properties:
+                event:
+                  type: string
+                  enum: [bill.rejected]
+                  description: イベント種別
+                bill:
+                  $ref: '#/components/schemas/Bill'
+                occurred_at:
+                  type: string
+                  format: date-time
+                  description: イベント発生日時
+      responses:
+        '200':
+          description: Webhook受信確認
+
+  bill.failed:
+    post:
+      tags: [Webhooks]
+      summary: 請求失敗通知
+      description: |
+        請求処理中にシステムエラーや残高不足などで失敗した際、登録されたWebhook URLにPOSTリクエストが送信されます。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event, bill, occurred_at]
+              properties:
+                event:
+                  type: string
+                  enum: [bill.failed]
+                  description: イベント種別
+                bill:
+                  $ref: '#/components/schemas/Bill'
+                occurred_at:
+                  type: string
+                  format: date-time
+                  description: イベント発生日時
+      responses:
+        '200':
+          description: Webhook受信確認
