@@ -478,7 +478,7 @@ paths:
       tags: [Stats]
       summary: ユーザー関連のランキングを取得
       parameters:
-        - name: rankine_name
+        - name: ranking_name
           in: path
           required: true
           schema:
@@ -551,12 +551,12 @@ paths:
                     type: string
                     description: 次のページを取得するためのカーソル
 
-  /stats/projects/{prokject_name}:
+  /stats/projects/{project_name}:
     get:
       tags: [Stats]
       summary: プロジェクト関連のランキングを取得
       parameters:
-        - name: prokect_name
+        - name: project_name
           in: path
           required: true
           schema:
@@ -971,6 +971,11 @@ paths:
     get:
         tags: [Projects]
         parameters:
+          - name: project_id
+            in: path
+            required: true
+            schema:
+              type: string
           - name: data
             in: query
             schema:
