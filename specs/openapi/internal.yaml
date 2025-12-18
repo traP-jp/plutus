@@ -73,12 +73,10 @@ components:
         amount:
           type: integer
           format: int64
-        project_id:
-          type: string
-          format: uuid
-        user_id:
-          type: string
-          format: uuid
+        project:
+          $ref: '#/components/schemas/Project
+        user:
+          $ref: '#/components/schemas/User
         description:
           type: string
         created_at:
