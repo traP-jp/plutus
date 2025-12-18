@@ -348,7 +348,6 @@ paths:
                     type: string
                     description: 次のページを取得するためのカーソル
 
-  # 特定期間のとか分ける パラメータ増やす rankingは増やすやつ
   # --- Stats ---
   /stats:
     get:
@@ -423,16 +422,11 @@ paths:
                   next_cursor:
                     type: string
                     description: 次のページを取得するためのカーソル
-  /stats/users/{ranking_name}:
+  /stats/projects:
     get:
       tags: [Stats]
-      summary: ユーザー関連のランキングを取得
+      summary: プロジェクト関連の統計情報を取得
       parameters:
-        - name: rankine_name
-          in: path
-          required: true
-          schema:
-            type: string
         - name: limit
           in: query
           schema:
@@ -458,6 +452,72 @@ paths:
                   items:
                     type: array
                     items:
+                      $ref: '#/components/schemas/Transaction'
+                  next_cursor:
+                    type: string
+                    description: 次のページを取得するためのカーソル
+  /stats/users/{ranking_name}:
+    get:
+      tags: [Stats]
+      summary: ユーザー関連のランキングを取得
+      parameters:
+        - name: rankine_name
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - balance # 終了時点での残高
+              - difference # 期間前と現在の差
+              - in # 入金総額
+              - out # 出金総額
+              - count # 取引件数
+              - total # 取引総額(入金と送金の合計)
+              - ratio # 期間前の残高から何%増えた・減ったか
+        - name: order
+          in: query
+          schema:
+            type: string
+            enum:
+              - desc
+              - asc
+            description: デフォルトはdesc(降順)
+        - name: term
+          required: true
+          in: query
+          schema:
+            type: string
+            enum:
+              - 24hours
+              - 7days
+              - 30days
+              - 365days
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: cursor
+          in: query
+          schema:
+            type: string
+            description: |
+              続きを取得するためのカーソル
+              前回のレスポンスの next_cursor に含まれる値を指定します。
+              初回リクエスト時は未指定とします。
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+
                       $ref: '#/components/schemas/Transaction'
                   next_cursor:
                     type: string
@@ -472,40 +532,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 20
-        - name: cursor
-          in: query
-          schema:
-            type: string
-            description: |
-              続きを取得するためのカーソル
-              前回のレスポンスの next_cursor に含まれる値を指定します。
-              初回リクエスト時は未指定とします。
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [items]
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Transaction'
-                  next_cursor:
-                    type: string
-                    description: 次のページを取得するためのカーソル
-  /stats/projects:
-    get:
-      tags: [Stats]
-      summary: プロジェクト関連の統計情報を取得
-      parameters:
         - name: limit
           in: query
           schema:
@@ -573,52 +599,15 @@ paths:
                     type: string
                     description: 次のページを取得するためのカーソル (存在しない場合は未設定)
 
-  # /leaderboard/{category}:
-  #   get:
-  #     tags: [Users]
-  #     summary: 指定したカテゴリのランキングを取得
-  #     description: 指定されたカテゴリに基づいたユーザーランキングを返します
-  #     parameters:
-  #       - name: category
-  #         in: path
-  #         required: true
-  #         description: |
-  #           ランキングの集計種別
-  #           - balance: 現在の所持金残高順
-  #         schema:
-  #           type: string
-  #           enum: [balance]
-  #       - name: limit
-  #         in: query
-  #         schema:
-  #           type: integer
-  #           default: 20
-  #       - name: cursor
-  #         in: query
-  #         schema:
-  #           type: string
-  #           description: |
-  #             続きを取得するためのカーソル
-  #     responses:
-  #       '200':
-  #         description: OK
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: object
-  #               required: [items]
-  #               properties:
-  #                 items:
-  #                   type: array
-  #                   items:
-  #                     $ref: '#/components/schemas/User'
-  #                 next_cursor:
-  #                   type: string
-  #                   description: 次のページを取得するためのカーソル (存在しない場合は未設定)
-
   /users/{user_id}:
     get:
         tags: [Users]
+        parameters:
+          - name: user_id
+            in: path
+            required: true
+            schema:
+              type: string
         summary: ユーザー詳細
         responses:
           '200':
@@ -626,14 +615,17 @@ paths:
             content:
               application/json:
                 schema:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/User'
+                  $ref: '#/components/schemas/User'
 
   /users/{user_id}/balance:
     get:
         tags: [Users]
         parameters:
+          - name: user_id
+            in: path
+            required: true
+            schema:
+              type: string
           - name: data
             in: query
             schema:
@@ -647,17 +639,21 @@ paths:
             content:
               application/json:
                 schema:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      balance:
-                        type: integer
-                        format: int64
+                  type: object
+                  properties:
+                    balance:
+                      type: integer
+                      format: int64
 
   /users/{user_id}/projects:
     get:
       tags: [Users]
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
       summary: 指定したユーザーがオーナーまたは管理者のプロジェクト一覧
       responses:
         '200':
@@ -761,13 +757,11 @@ paths:
             content:
               application/json:
                 schema:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      balance:
-                        type: integer
-                        format: int64
+                  type: object
+                  properties:
+                    balance:
+                      type: integer
+                      format: int64
 
   /projects/{project_id}/admins:
     get:
@@ -887,3 +881,5 @@ paths:
         '204':
           description: Deleted
 
+# 特定日時のランキング
+#特定ユーザーのランキング
