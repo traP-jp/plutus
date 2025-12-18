@@ -623,7 +623,7 @@ paths:
                           type: integer
                           format: int64
                           description: 24hoursなら、前の24hoursでの順位との比較
-                        user:
+                       project:
                           $ref: '#/components/schemas/Project'
                   next_cursor:
                     type: string
