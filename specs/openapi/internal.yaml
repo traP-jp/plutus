@@ -42,15 +42,13 @@ components:
         url:
           type: string
           format: uri
-        owner_id:
-          type: string
-          format: uuid
-        admin_ids:
+        owner:
+          $ref: '#/components/schemas/User'
+        admins:
           type: array
           items:
-            type: string
-            format: uuid
-          description: プロジェクト管理者のユーザーID一覧
+            $ref: '#/components/schemas/User'
+          description: プロジェクト管理者のユーザー情報の配列
         balance:
           type: integer
           format: int64
@@ -74,9 +72,9 @@ components:
           type: integer
           format: int64
         project:
-          $ref: '#/components/schemas/Project
+          $ref: '#/components/schemas/Project'
         user:
-          $ref: '#/components/schemas/User
+          $ref: '#/components/schemas/User'
         description:
           type: string
         created_at:
@@ -93,15 +91,13 @@ components:
         amount:
           type: integer
           format: int64
-        user_id:
-          type: string
-          format: uuid
+        user:
+          $ref: '#/components/schemas/User'
           description: 請求対象のユーザーID
         description:
           type: string
-        project_id:
-          type: string
-          format: uuid
+        project:
+          $ref: '#/components/schemas/Project'
         status:
           type: string
           enum: [PENDING, COMPLETED, REJECTED, FAILED]
@@ -621,7 +617,7 @@ paths:
                           type: integer
                           format: int64
                           description: 24hoursなら、前の24hoursでの順位との比較
-                       project:
+                        project:
                           $ref: '#/components/schemas/Project'
                   next_cursor:
                     type: string
@@ -668,6 +664,24 @@ paths:
         tags: [Users]
         parameters:
           - name: user_id
+            in: path
+            required: true
+            schema:
+              type: string
+        summary: ユーザー詳細
+        responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/User'
+
+  /users/{user_name}:
+    get:
+        tags: [Users]
+        parameters:
+          - name: user_name
             in: path
             required: true
             schema:
@@ -926,6 +940,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Project'
+
+  /projects/{project_id}:
+    get:
+      tags: [Projects]
+      summary: プロジェクト詳細
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
     put:
       tags: [Projects]
       summary: プロジェクトの情報を更新
@@ -947,12 +979,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Project'
 
-  /projects/{project_id}:
+  /projects/{project_name}:
     get:
       tags: [Projects]
       summary: プロジェクト詳細
       parameters:
-        - name: project_id
+        - name: project_name
           in: path
           required: true
           schema:
@@ -1173,11 +1205,12 @@ paths:
                 user_id:
                   type: string
                   format: uuid
+                user_name:
+                  type: string
+                  description: user_nameとuser_idどちらかを指定。両方ある場合はuser_idを優先。
       responses:
         '204':
           description: Added
-
-  /projects/{project_id}/admins/{user_id}:
     delete:
       tags: [Projects]
       summary: プロジェクト管理者を削除
@@ -1193,6 +1226,20 @@ paths:
           schema:
             type: string
             format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id]
+              properties:
+                user_id:
+                  type: string
+                  format: uuid
+                user_name:
+                  type: string
+                  description: user_nameとuser_idどちらかを指定。両方ある場合はuser_idを優先。
       responses:
         '204':
           description: Deleted
