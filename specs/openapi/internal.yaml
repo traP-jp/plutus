@@ -1160,11 +1160,16 @@ paths:
           required: true
           schema:
             type: string
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id]
+              properties:
+                user_id:
+                  type: string
       responses:
         '204':
           description: Added
@@ -1177,11 +1182,16 @@ paths:
           required: true
           schema:
             type: string
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id]
+              properties:
+                user_id:
+                  type: string
       responses:
         '204':
           description: Deleted
