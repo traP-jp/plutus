@@ -42,15 +42,13 @@ components:
         url:
           type: string
           format: uri
-        owner_id:
-          type: string
-          format: uuid
-        admin_ids:
+        owner:
+          $ref: '#/components/schemas/User'
+        admins:
           type: array
           items:
-            type: string
-            format: uuid
-          description: プロジェクト管理者のユーザーID一覧
+            $ref: '#/components/schemas/User'
+          description: プロジェクト管理者のユーザー情報の配列
         balance:
           type: integer
           format: int64
@@ -73,12 +71,10 @@ components:
         amount:
           type: integer
           format: int64
-        project_id:
-          type: string
-          format: uuid
-        user_id:
-          type: string
-          format: uuid
+        project:
+          $ref: '#/components/schemas/Project'
+        user:
+          $ref: '#/components/schemas/User'
         description:
           type: string
         created_at:
@@ -95,15 +91,13 @@ components:
         amount:
           type: integer
           format: int64
-        user_id:
-          type: string
-          format: uuid
+        user:
+          $ref: '#/components/schemas/User'
           description: 請求対象のユーザーID
         description:
           type: string
-        project_id:
-          type: string
-          format: uuid
+        project:
+          $ref: '#/components/schemas/Project'
         status:
           type: string
           enum: [PENDING, COMPLETED, REJECTED, FAILED]
@@ -623,7 +617,7 @@ paths:
                           type: integer
                           format: int64
                           description: 24hoursなら、前の24hoursでの順位との比較
-                        user:
+                        project:
                           $ref: '#/components/schemas/Project'
                   next_cursor:
                     type: string
@@ -928,6 +922,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Project'
+
+  /projects/{project_id}:
+    get:
+      tags: [Projects]
+      summary: プロジェクト詳細
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
     put:
       tags: [Projects]
       summary: プロジェクトの情報を更新
@@ -944,24 +956,6 @@ paths:
       responses:
         '201':
           description: Updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Project'
-
-  /projects/{project_id}:
-    get:
-      tags: [Projects]
-      summary: プロジェクト詳細
-      parameters:
-        - name: project_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
           content:
             application/json:
               schema:
@@ -1174,12 +1168,9 @@ paths:
               properties:
                 user_id:
                   type: string
-                  format: uuid
       responses:
         '204':
           description: Added
-
-  /projects/{project_id}/admins/{user_id}:
     delete:
       tags: [Projects]
       summary: プロジェクト管理者を削除
@@ -1189,12 +1180,16 @@ paths:
           required: true
           schema:
             type: string
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id]
+              properties:
+                user_id:
+                  type: string
       responses:
         '204':
           description: Deleted
