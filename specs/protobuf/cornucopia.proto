@@ -17,15 +17,13 @@ service CornucopiaService {
 }
 
 message CreateAccountRequest {
-  string owner_id = 1; // User or Project ID from Dashboard
-  bool can_overdraft = 2; // Whether the account can go negative
+  bool can_overdraft = 1;
 }
 
 message CreateAccountResponse {
   string account_id = 1;
-  string owner_id = 2;
-  int64 balance = 3;
-  bool can_overdraft = 4;
+  int64 balance = 2;
+  bool can_overdraft = 3;
 }
 
 message GetAccountRequest {
@@ -34,9 +32,8 @@ message GetAccountRequest {
 
 message GetAccountResponse {
   string account_id = 1;
-  string owner_id = 2;
-  int64 balance = 3;
-  bool can_overdraft = 4;
+  int64 balance = 2;
+  bool can_overdraft = 3;
 }
 
 message TransferRequest {
