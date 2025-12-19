@@ -754,7 +754,7 @@ paths:
             required: true
             schema:
               type: string
-          - name: data
+          - name: date
             in: query
             schema:
               type: string
@@ -1069,7 +1069,7 @@ paths:
             required: true
             schema:
               type: string
-          - name: data
+          - name: date
             in: query
             schema:
               type: string
