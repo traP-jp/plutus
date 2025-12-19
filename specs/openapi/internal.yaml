@@ -1149,8 +1149,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/User'
-
-  /projects/{project_id}/admins/{user_id}:
     post:
       tags: [Projects]
       summary: プロジェクト管理者を追加
