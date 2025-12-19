@@ -18,6 +18,10 @@ components:
     User:
       type: object
       description: ユーザー
+      required:
+        - id
+        - name
+        - balance
       properties:
         id:
           type: string
@@ -33,6 +37,12 @@ components:
     Project:
       type: object
       description: プロジェクト
+      required:
+        - id
+        - name
+        - owner
+        - admins
+        - balance
       properties:
         id:
           type: string
@@ -56,6 +66,13 @@ components:
     Transaction:
       type: object
       description: 完了した取引
+      required:
+        - id
+        - type
+        - amount
+        - project
+        - user
+        - created_at
       properties:
         id:
           type: string
@@ -84,6 +101,13 @@ components:
     Bill:
       type: object
       description: 請求
+      required:
+        - id
+        - amount
+        - user
+        - project
+        - status
+        - created_at
       properties:
         id:
           type: string
@@ -108,6 +132,9 @@ components:
     APIClient:
       type: object
       description: APIクライアント
+      required:
+        - client_id
+        - created_at
       properties:
         client_id:
           type: string
@@ -126,6 +153,7 @@ paths:
   /me:
     get:
       tags: [Me]
+      operationId: getCurrentUser
       summary: 自分の情報を取得
       responses:
         '200':
@@ -138,6 +166,7 @@ paths:
   /me/bills/{bill_id}:
     get:
       tags: [Me]
+      operationId: getBill
       summary: 請求の詳細を取得
       parameters:
         - name: bill_id
@@ -156,6 +185,7 @@ paths:
   /me/bills/{bill_id}/approve:
     post:
       tags: [Me]
+      operationId: approveBill
       summary: 請求を承認して支払いを実行する
       description: 成功した場合、プロジェクトが指定したリダイレクトURLを返す
       parameters:
@@ -171,6 +201,8 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - redirect_url
                 properties:
                   redirect_url:
                     type: string
@@ -183,6 +215,7 @@ paths:
   /me/bills/{bill_id}/decline:
     post:
       tags: [Me]
+      operationId: declineBill
       summary: 請求を拒否する
       parameters:
         - name: bill_id
@@ -201,6 +234,7 @@ paths:
   /transactions:
     get:
       tags: [Transactions]
+      operationId: getTransactions
       summary: 経済圏全体の取引履歴を取得
       parameters:
         - name: term
@@ -246,6 +280,7 @@ paths:
   /transactions/users/{user_id}:
     get:
       tags: [Transactions]
+      operationId: getUserTransactions
       summary: 特定のユーザーの取引履歴を取得
       parameters:
         - name: user_id
@@ -296,6 +331,7 @@ paths:
   /transactions/projects/{project_id}:
     get:
       tags: [Transactions]
+      operationId: getProjectTransactions
       summary: 特定のプロジェクトの取引履歴を取得
       parameters:
         - name: project_id
@@ -347,6 +383,7 @@ paths:
   /stats:
     get:
       tags: [Stats]
+      operationId: getSystemStats
       summary: 経済圏全体の統計情報を取得
       parameters:
         - name: term
@@ -366,6 +403,12 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - balance
+                  - difference
+                  - count
+                  - total
+                  - ratio
                 properties:
                   balance: # 市場にあるお金の合計
                     type: integer
@@ -386,6 +429,7 @@ paths:
   /stats/users:
     get:
       tags: [Stats]
+      operationId: getUsersStats
       summary: ユーザー関連の統計情報を取得
       parameters:
         - name: term
@@ -405,6 +449,13 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - number
+                  - balance
+                  - difference
+                  - count
+                  - total
+                  - ratio
                 properties:
                   number: # 人数
                     type: integer
@@ -428,6 +479,7 @@ paths:
   /stats/projects:
     get:
       tags: [Stats]
+      operationId: getProjectsStats
       summary: プロジェクト関連の統計情報を取得
       parameters:
         - name: term
@@ -447,6 +499,13 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - number
+                  - balance
+                  - difference
+                  - count
+                  - total
+                  - ratio
                 properties:
                   number: # 人数
                     type: integer
@@ -470,6 +529,7 @@ paths:
   /stats/users/{ranking_name}:
     get:
       tags: [Stats]
+      operationId: getUserRankings
       summary: ユーザー関連のランキングを取得
       parameters:
         - name: ranking_name
@@ -523,11 +583,13 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [items]
                 properties:
                   items:
                     type: array
                     items:
                       type: object
+                      required: [rank, value, difference, user]
                       properties:
                         rank:
                           type: integer
@@ -548,6 +610,7 @@ paths:
   /stats/projects/{project_name}:
     get:
       tags: [Stats]
+      operationId: getProjectRankings
       summary: プロジェクト関連のランキングを取得
       parameters:
         - name: project_name
@@ -601,11 +664,13 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [items]
                 properties:
                   items:
                     type: array
                     items:
                       type: object
+                      required: [rank, value, difference, project]
                       properties:
                         rank:
                           type: integer
@@ -627,6 +692,7 @@ paths:
   /users:
     get:
       tags: [Users]
+      operationId: getUsers
       summary: 全ユーザー一覧を取得
       parameters:
         - name: limit
@@ -662,6 +728,7 @@ paths:
   /users/{user_id}:
     get:
         tags: [Users]
+        operationId: getUser
         parameters:
           - name: user_id
             in: path
@@ -680,6 +747,7 @@ paths:
   /users/{user_id}/balance:
     get:
         tags: [Users]
+        operationId: getUserBalance
         parameters:
           - name: user_id
             in: path
@@ -700,6 +768,7 @@ paths:
               application/json:
                 schema:
                   type: object
+                  required: [balance]
                   properties:
                     balance:
                       type: integer
@@ -708,6 +777,7 @@ paths:
   /users/{user_id}/stats:
     get:
         tags: [Users]
+        operationId: getUserStats
         parameters:
           - name: user_id
             in: path
@@ -739,9 +809,18 @@ paths:
               application/json:
                 schema:
                   type: object
+                  required:
+                    - balance
+                    - difference
+                    - in
+                    - out
+                    - count
+                    - total
+                    - ratio
                   properties:
                     balance: # 終了時点での残高
                       type: object
+                      required: [rank, value, difference, user]
                       properties:
                         rank:
                           type: integer
@@ -757,6 +836,7 @@ paths:
                           $ref: '#/components/schemas/User'
                     difference: # 期間前と現在の差
                       type: object
+                      required: [rank, value, difference, user]
                       properties:
                         rank:
                           type: integer
@@ -772,6 +852,7 @@ paths:
                           $ref: '#/components/schemas/User'
                     in: # 入金総額
                       type: object
+                      required: [rank, value, difference, user]
                       properties:
                         rank:
                           type: integer
@@ -787,6 +868,7 @@ paths:
                           $ref: '#/components/schemas/User'
                     out: # 出金総額
                       type: object
+                      required: [rank, value, difference, user]
                       properties:
                         rank:
                           type: integer
@@ -802,6 +884,7 @@ paths:
                           $ref: '#/components/schemas/User'
                     count: # 取引件数
                       type: object
+                      required: [rank, value, difference, user]
                       properties:
                         rank:
                           type: integer
@@ -817,6 +900,7 @@ paths:
                           $ref: '#/components/schemas/User'
                     total: # 取引総額(入金と送金の合計)
                       type: object
+                      required: [rank, value, difference, user]
                       properties:
                         rank:
                           type: integer
@@ -832,6 +916,7 @@ paths:
                           $ref: '#/components/schemas/User'
                     ratio: # 期間前の残高から何%増えた・減ったか
                       type: object
+                      required: [rank, value, difference, user]
                       properties:
                         rank:
                           type: integer
@@ -849,6 +934,7 @@ paths:
   /users/{user_id}/projects:
     get:
       tags: [Users]
+      operationId: getUserProjects
       parameters:
         - name: user_id
           in: path
@@ -870,6 +956,7 @@ paths:
   /projects:
     get:
       tags: [Projects]
+      operationId: getProjects
       summary: 全プロジェクト一覧を取得
       parameters:
         - name: limit
@@ -901,6 +988,7 @@ paths:
                     description: 次のページを取得するためのカーソル
     post:
       tags: [Projects]
+      operationId: createProject
       summary: プロジェクトを新規作成
       requestBody:
         required: true
@@ -908,6 +996,7 @@ paths:
           application/json:
             schema:
               type: object
+              required: [name]
               properties:
                 name:
                   type: string
@@ -926,6 +1015,7 @@ paths:
   /projects/{project_id}:
     get:
       tags: [Projects]
+      operationId: getProject
       summary: プロジェクト詳細
       parameters:
         - name: project_id
@@ -942,6 +1032,7 @@ paths:
                 $ref: '#/components/schemas/Project'
     put:
       tags: [Projects]
+      operationId: updateProject
       summary: プロジェクトの情報を更新
       requestBody:
         required: true
@@ -949,6 +1040,7 @@ paths:
           application/json:
             schema:
               type: object
+              required: [url]
               properties:
                 url:
                   type: string
@@ -964,6 +1056,7 @@ paths:
   /projects/{project_id}/balance:
     get:
         tags: [Projects]
+        operationId: getProjectBalance
         parameters:
           - name: project_id
             in: path
@@ -984,6 +1077,7 @@ paths:
               application/json:
                 schema:
                   type: object
+                  required: [balance]
                   properties:
                     balance:
                       type: integer
@@ -992,6 +1086,7 @@ paths:
   /projects/{project_id}/stats:
     get:
         tags: [Projects]
+        operationId: getProjectStats
         parameters:
           - name: project_id
             in: path
@@ -1023,9 +1118,18 @@ paths:
               application/json:
                 schema:
                   type: object
+                  required:
+                    - balance
+                    - difference
+                    - in
+                    - out
+                    - count
+                    - total
+                    - ratio
                   properties:
                     balance: # 終了時点での残高
                       type: object
+                      required: [rank, value, difference, project]
                       properties:
                         rank:
                           type: integer
@@ -1037,10 +1141,11 @@ paths:
                           type: integer
                           format: int64
                           description: 24hoursなら、前の24hoursでの順位との比較
-                        user:
+                        project:
                           $ref: '#/components/schemas/Project'
                     difference: # 期間前と現在の差
                       type: object
+                      required: [rank, value, difference, project]
                       properties:
                         rank:
                           type: integer
@@ -1052,10 +1157,11 @@ paths:
                           type: integer
                           format: int64
                           description: 24hoursなら、前の24hoursでの順位との比較
-                        user:
+                        project:
                           $ref: '#/components/schemas/Project'
                     in: # 入金総額
                       type: object
+                      required: [rank, value, difference, project]
                       properties:
                         rank:
                           type: integer
@@ -1067,10 +1173,11 @@ paths:
                           type: integer
                           format: int64
                           description: 24hoursなら、前の24hoursでの順位との比較
-                        user:
+                        project:
                           $ref: '#/components/schemas/Project'
                     out: # 出金総額
                       type: object
+                      required: [rank, value, difference, project]
                       properties:
                         rank:
                           type: integer
@@ -1082,10 +1189,11 @@ paths:
                           type: integer
                           format: int64
                           description: 24hoursなら、前の24hoursでの順位との比較
-                        user:
+                        project:
                           $ref: '#/components/schemas/Project'
                     count: # 取引件数
                       type: object
+                      required: [rank, value, difference, project]
                       properties:
                         rank:
                           type: integer
@@ -1097,10 +1205,11 @@ paths:
                           type: integer
                           format: int64
                           description: 24hoursなら、前の24hoursでの順位との比較
-                        user:
+                        project:
                           $ref: '#/components/schemas/Project'
                     total: # 取引総額(入金と送金の合計)
                       type: object
+                      required: [rank, value, difference, project]
                       properties:
                         rank:
                           type: integer
@@ -1112,10 +1221,11 @@ paths:
                           type: integer
                           format: int64
                           description: 24hoursなら、前の24hoursでの順位との比較
-                        user:
+                        project:
                           $ref: '#/components/schemas/Project'
                     ratio: # 期間前の残高から何%増えた・減ったか
                       type: object
+                      required: [rank, value, difference, project]
                       properties:
                         rank:
                           type: integer
@@ -1127,12 +1237,13 @@ paths:
                           type: integer
                           format: int64
                           description: 24hoursなら、前の24hoursでの順位との比較
-                        user:
+                        project:
                           $ref: '#/components/schemas/Project'
 
   /projects/{project_id}/admins:
     get:
       tags: [Projects]
+      operationId: getProjectAdmins
       summary: プロジェクト管理者一覧を取得
       parameters:
         - name: project_id
@@ -1153,6 +1264,7 @@ paths:
   /projects/{project_id}/admins/{user_id}:
     post:
       tags: [Projects]
+      operationId: addProjectAdmin
       summary: プロジェクト管理者を追加
       parameters:
         - name: project_id
@@ -1175,6 +1287,7 @@ paths:
           description: Added
     delete:
       tags: [Projects]
+      operationId: removeProjectAdmin
       summary: プロジェクト管理者を削除
       parameters:
         - name: project_id
@@ -1199,6 +1312,7 @@ paths:
   /projects/{project_id}/clients:
     get:
       tags: [Projects]
+      operationId: getProjectApiClients
       summary: APIクライアント一覧
       parameters:
         - name: project_id
@@ -1217,6 +1331,7 @@ paths:
                   $ref: '#/components/schemas/APIClient'
     post:
       tags: [Projects]
+      operationId: createProjectApiClient
       summary: APIクライアントを新規発行
       parameters:
         - name: project_id
@@ -1235,6 +1350,7 @@ paths:
   /projects/{project_id}/clients/{client_id}:
     delete:
       tags: [Projects]
+      operationId: deleteProjectApiClient
       summary: APIクライアントを削除（無効化）
       parameters:
         - name: project_id
