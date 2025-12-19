@@ -694,20 +694,6 @@ paths:
       tags: [Users]
       operationId: getUsers
       summary: 全ユーザー一覧を取得
-      parameters:
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 20
-        - name: cursor
-          in: query
-          schema:
-            type: string
-            description: |
-              続きを取得するためのカーソル
-              前回のレスポンスの next_cursor に含まれる値を指定します。
-              初回リクエスト時は未指定とします。
       responses:
         '200':
           description: OK
@@ -958,18 +944,6 @@ paths:
       tags: [Projects]
       operationId: getProjects
       summary: 全プロジェクト一覧を取得
-      parameters:
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 20
-        - name: cursor
-          in: query
-          schema:
-            type: string
-            description: |
-              続きを取得するためのカーソル
       responses:
         '200':
           description: OK
