@@ -1,0 +1,1 @@
+FROM ghcr.io/trap-jp/pteron-server:main
