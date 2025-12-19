@@ -12,6 +12,8 @@ import "google/protobuf/timestamp.proto";
 service CornucopiaService {
   rpc CreateAccount (CreateAccountRequest) returns (CreateAccountResponse) {}
   rpc GetAccount (GetAccountRequest) returns (GetAccountResponse) {}
+  rpc GetAccounts (GetAccountsRequest) returns (GetAccountsResponse) {}
+  rpc ListAccounts (ListAccountsRequest) returns (ListAccountsResponse) {}
   rpc Transfer (TransferRequest) returns (TransferResponse) {}
   rpc GetJournalEntries (GetJournalEntriesRequest) returns (GetJournalEntriesResponse) {}
 }
@@ -31,6 +33,47 @@ message GetAccountRequest {
 }
 
 message GetAccountResponse {
+  string account_id = 1;
+  int64 balance = 2;
+  bool can_overdraft = 3;
+}
+
+message GetAccountsRequest {
+  repeated string account_ids = 1;
+}
+
+message GetAccountsResponse {
+  repeated Account accounts = 1;
+}
+
+message ListAccountsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+  optional int64 min_balance = 3;
+  optional int64 max_balance = 4;
+  optional bool can_overdraft = 5;
+  SortField sort_field = 6;
+  SortOrder sort_order = 7;
+}
+
+enum SortField {
+  SORT_FIELD_UNSPECIFIED = 0;
+  SORT_FIELD_ACCOUNT_ID = 1;
+  SORT_FIELD_BALANCE = 2;
+}
+
+enum SortOrder {
+  SORT_ORDER_UNSPECIFIED = 0;
+  SORT_ORDER_ASC = 1;
+  SORT_ORDER_DESC = 2;
+}
+
+message ListAccountsResponse {
+  repeated Account accounts = 1;
+  int32 total_count = 2;
+}
+
+message Account {
   string account_id = 1;
   int64 balance = 2;
   bool can_overdraft = 3;
