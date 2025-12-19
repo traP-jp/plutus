@@ -1034,6 +1034,12 @@ paths:
       tags: [Projects]
       operationId: updateProject
       summary: プロジェクトの情報を更新
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
         required: true
         content:
