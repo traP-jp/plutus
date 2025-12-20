@@ -5,7 +5,7 @@ info:
   description: |
     ダッシュボードおよびフロントエンド向けの内部API。
 servers:
-  - url: /api/internal
+  - url: /internal
 components:
   securitySchemes:
     ForwardAuth:
