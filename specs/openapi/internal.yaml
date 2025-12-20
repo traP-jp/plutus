@@ -72,7 +72,7 @@ components:
         - amount
         - project
         - user
-        - created_at
+        - createdAt
       properties:
         id:
           type: string
@@ -94,7 +94,7 @@ components:
           $ref: '#/components/schemas/User'
         description:
           type: string
-        created_at:
+        createdAt:
           type: string
           format: date-time
 
@@ -107,7 +107,7 @@ components:
         - user
         - project
         - status
-        - created_at
+        - createdAt
       properties:
         id:
           type: string
@@ -125,7 +125,7 @@ components:
         status:
           type: string
           enum: [PENDING, COMPLETED, REJECTED, FAILED]
-        created_at:
+        createdAt:
           type: string
           format: date-time
 
@@ -133,15 +133,15 @@ components:
       type: object
       description: APIクライアント
       required:
-        - client_id
-        - created_at
+        - clientId
+        - createdAt
       properties:
-        client_id:
+        clientId:
           type: string
-        client_secret:
+        clientSecret:
           type: string
           description: 作成時のみ返却される
-        created_at:
+        createdAt:
           type: string
           format: date-time
 
@@ -204,7 +204,7 @@ paths:
                 required:
                   - redirect_url
                 properties:
-                  redirect_url:
+                  redirectUrl:
                     type: string
                     format: uri
         '400':
@@ -273,7 +273,7 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Transaction'
-                  next_cursor:
+                  nextCursor:
                     type: string
                     description: 次のページを取得するためのカーソル
 
@@ -603,7 +603,7 @@ paths:
                           description: 24hoursなら、前の24hoursでの順位との比較
                         user:
                           $ref: '#/components/schemas/User'
-                  next_cursor:
+                  nextCursor:
                     type: string
                     description: 次のページを取得するためのカーソル
 
@@ -707,7 +707,7 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/User'
-                  next_cursor:
+                  nextCursor:
                     type: string
                     description: 次のページを取得するためのカーソル (存在しない場合は未設定)
 
@@ -957,7 +957,7 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Project'
-                  next_cursor:
+                  nextCursor:
                     type: string
                     description: 次のページを取得するためのカーソル
     post:
@@ -1256,9 +1256,9 @@ paths:
           application/json:
             schema:
               type: object
-              required: [user_id]
+              required: [userId]
               properties:
-                user_id:
+                userId:
                   type: string
       responses:
         '204':
