@@ -163,13 +163,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
 
-  /me/bills/{bill_id}:
+  /me/bills/{billId}:
     get:
       tags: [Me]
       operationId: getBill
       summary: 請求の詳細を取得
       parameters:
-        - name: bill_id
+        - name: billId
           in: path
           required: true
           schema:
@@ -182,14 +182,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/Bill'
 
-  /me/bills/{bill_id}/approve:
+  /me/bills/{billId}/approve:
     post:
       tags: [Me]
       operationId: approveBill
       summary: 請求を承認して支払いを実行する
       description: 成功した場合、プロジェクトが指定したリダイレクトURLを返す
       parameters:
-        - name: bill_id
+        - name: billId
           in: path
           required: true
           schema:
@@ -212,13 +212,13 @@ paths:
         '409':
           description: 既に処理済み
 
-  /me/bills/{bill_id}/decline:
+  /me/bills/{billId}/decline:
     post:
       tags: [Me]
       operationId: declineBill
       summary: 請求を拒否する
       parameters:
-        - name: bill_id
+        - name: billId
           in: path
           required: true
           schema:
@@ -277,13 +277,13 @@ paths:
                     type: string
                     description: 次のページを取得するためのカーソル
 
-  /transactions/users/{user_id}:
+  /transactions/users/{userId}:
     get:
       tags: [Transactions]
       operationId: getUserTransactions
       summary: 特定のユーザーの取引履歴を取得
       parameters:
-        - name: user_id
+        - name: userId
           in: path
           required: true
           schema:
@@ -328,13 +328,13 @@ paths:
                     type: string
                     description: 次のページを取得するためのカーソル
 
-  /transactions/projects/{project_id}:
+  /transactions/projects/{projectId}:
     get:
       tags: [Transactions]
       operationId: getProjectTransactions
       summary: 特定のプロジェクトの取引履歴を取得
       parameters:
-        - name: project_id
+        - name: projectId
           in: path
           required: true
           schema:
@@ -526,13 +526,13 @@ paths:
                     type: integer
                     format: int64
 
-  /stats/users/{ranking_name}:
+  /stats/users/{rankingName}:
     get:
       tags: [Stats]
       operationId: getUserRankings
       summary: ユーザー関連のランキングを取得
       parameters:
-        - name: ranking_name
+        - name: rankingName
           in: path
           required: true
           schema:
@@ -607,13 +607,13 @@ paths:
                     type: string
                     description: 次のページを取得するためのカーソル
 
-  /stats/projects/{project_name}:
+  /stats/projects/{projectName}:
     get:
       tags: [Stats]
       operationId: getProjectRankings
       summary: プロジェクト関連のランキングを取得
       parameters:
-        - name: project_name
+        - name: projectName
           in: path
           required: true
           schema:
@@ -711,12 +711,12 @@ paths:
                     type: string
                     description: 次のページを取得するためのカーソル (存在しない場合は未設定)
 
-  /users/{user_id}:
+  /users/{userId}:
     get:
         tags: [Users]
         operationId: getUser
         parameters:
-          - name: user_id
+          - name: userId
             in: path
             required: true
             schema:
@@ -730,12 +730,12 @@ paths:
                 schema:
                   $ref: '#/components/schemas/User'
 
-  /users/{user_id}/balance:
+  /users/{userId}/balance:
     get:
         tags: [Users]
         operationId: getUserBalance
         parameters:
-          - name: user_id
+          - name: userId
             in: path
             required: true
             schema:
@@ -760,12 +760,12 @@ paths:
                       type: integer
                       format: int64
 
-  /users/{user_id}/stats:
+  /users/{userId}/stats:
     get:
         tags: [Users]
         operationId: getUserStats
         parameters:
-          - name: user_id
+          - name: userId
             in: path
             required: true
             schema:
@@ -917,12 +917,12 @@ paths:
                         user:
                           $ref: '#/components/schemas/User'
 
-  /users/{user_id}/projects:
+  /users/{userId}/projects:
     get:
       tags: [Users]
       operationId: getUserProjects
       parameters:
-        - name: user_id
+        - name: userId
           in: path
           required: true
           schema:
@@ -986,13 +986,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Project'
 
-  /projects/{project_id}:
+  /projects/{projectId}:
     get:
       tags: [Projects]
       operationId: getProject
       summary: プロジェクト詳細
       parameters:
-        - name: project_id
+        - name: projectId
           in: path
           required: true
           schema:
@@ -1009,7 +1009,7 @@ paths:
       operationId: updateProject
       summary: プロジェクトの情報を更新
       parameters:
-        - name: project_id
+        - name: projectId
           in: path
           required: true
           schema:
@@ -1033,12 +1033,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Project'
 
-  /projects/{project_id}/balance:
+  /projects/{projectId}/balance:
     get:
         tags: [Projects]
         operationId: getProjectBalance
         parameters:
-          - name: project_id
+          - name: projectId
             in: path
             required: true
             schema:
@@ -1063,12 +1063,12 @@ paths:
                       type: integer
                       format: int64
 
-  /projects/{project_id}/stats:
+  /projects/{projectId}/stats:
     get:
         tags: [Projects]
         operationId: getProjectStats
         parameters:
-          - name: project_id
+          - name: projectId
             in: path
             required: true
             schema:
@@ -1220,13 +1220,13 @@ paths:
                         project:
                           $ref: '#/components/schemas/Project'
 
-  /projects/{project_id}/admins:
+  /projects/{projectId}/admins:
     get:
       tags: [Projects]
       operationId: getProjectAdmins
       summary: プロジェクト管理者一覧を取得
       parameters:
-        - name: project_id
+        - name: projectId
           in: path
           required: true
           schema:
@@ -1245,7 +1245,7 @@ paths:
       operationId: addProjectAdmin
       summary: プロジェクト管理者を追加
       parameters:
-        - name: project_id
+        - name: projectId
           in: path
           required: true
           schema:
@@ -1268,7 +1268,7 @@ paths:
       operationId: removeProjectAdmin
       summary: プロジェクト管理者を削除
       parameters:
-        - name: project_id
+        - name: projectId
           in: path
           required: true
           schema:
@@ -1287,13 +1287,13 @@ paths:
         '204':
           description: Deleted
 
-  /projects/{project_id}/clients:
+  /projects/{projectId}/clients:
     get:
       tags: [Projects]
       operationId: getProjectApiClients
       summary: APIクライアント一覧
       parameters:
-        - name: project_id
+        - name: projectId
           in: path
           required: true
           schema:
@@ -1312,7 +1312,7 @@ paths:
       operationId: createProjectApiClient
       summary: APIクライアントを新規発行
       parameters:
-        - name: project_id
+        - name: projectId
           in: path
           required: true
           schema:
@@ -1325,18 +1325,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIClient'
 
-  /projects/{project_id}/clients/{client_id}:
+  /projects/{projectId}/clients/{clientId}:
     delete:
       tags: [Projects]
       operationId: deleteProjectApiClient
       summary: APIクライアントを削除（無効化）
       parameters:
-        - name: project_id
+        - name: projectId
           in: path
           required: true
           schema:
             type: string
-        - name: client_id
+        - name: clientId
           in: path
           required: true
           schema:
