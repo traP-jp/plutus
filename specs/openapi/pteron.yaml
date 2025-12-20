@@ -37,8 +37,6 @@ components:
         - id
         - type
         - amount
-        - projectId
-        - userId
         - createdAt
       properties:
         id:
