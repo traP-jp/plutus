@@ -103,7 +103,7 @@ components:
             - COMPLETED: 支払い完了
             - REJECTED: ユーザーが拒否
             - FAILED: 支払い失敗（残高不足など）
-        created_at:
+        createdAt:
           type: string
           format: date-time
 
@@ -221,7 +221,7 @@ paths:
             type: string
             description: |
               続きを取得するためのカーソル
-              前回のレスポンスの next_cursor に含まれる値を指定します。
+              前回のレスポンスの nextCursor に含まれる値を指定します。
               初回リクエスト時は未指定とします。
       responses:
         '200':
@@ -270,7 +270,7 @@ paths:
             type: string
             description: |
               続きを取得するためのカーソル
-              前回のレスポンスの next_cursor に含まれる値を指定します。
+              前回のレスポンスの nextCursor に含まれる値を指定します。
               初回リクエスト時は未指定とします。
       responses:
         '200':
@@ -285,7 +285,7 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Bill'
-                  next_cursor:
+                  nextCursor:
                     type: string
                     description: 次のページを取得するためのカーソル (存在しない場合は未設定)
         '401':
@@ -339,7 +339,7 @@ paths:
       tags: [Bills]
       operationId: createBill
       summary: ユーザーへの請求を作成する
-      description: レスポンスに含まれる payment_url へユーザーを誘導してください
+      description: レスポンスに含まれる paymentUrl へユーザーを誘導してください
       requestBody:
         required: true
         content:
@@ -366,14 +366,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  # 変更点: {bill_id} -> {billId}
   /bills/{billId}:
     get:
       tags: [Bills]
       operationId: getBill
       summary: 請求のステータスを確認する
       parameters:
-        - name: billId  # 変更点
+        - name: billId
           in: path
           required: true
           schema:
@@ -399,7 +398,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  # 変更点: {bill_id} -> {billId}
   /bills/{billId}/cancel:
     post:
       tags: [Bills]
@@ -407,7 +405,7 @@ paths:
       summary: 未処理の請求をキャンセルする
       description: PENDING状態の請求のみキャンセル可能
       parameters:
-        - name: billId  # 変更点
+        - name: billId
           in: path
           required: true
           schema:
