@@ -17,6 +17,10 @@ components:
   schemas:
     Project:
       type: object
+      required:
+        - id
+        - name
+        - balance
       properties:
         id:
           type: string
@@ -29,6 +33,13 @@ components:
 
     Transaction:
       type: object
+      required:
+        - id
+        - type
+        - amount
+        - project_id
+        - user_id
+        - created_at
       properties:
         id:
           type: string
@@ -61,6 +72,12 @@ components:
 
     Bill:
       type: object
+      required:
+        - id
+        - amount
+        - user_id
+        - status
+        - created_at
       properties:
         id:
           type: string
@@ -80,11 +97,16 @@ components:
         status:
           type: string
           enum: [PENDING, COMPLETED, REJECTED, FAILED]
+          description: |
+            請求のステータス
+            - PENDING: 未払い（ユーザーの承認待ち）
+            - COMPLETED: 支払い完了
+            - REJECTED: ユーザーが拒否
+            - FAILED: 支払い失敗（残高不足など）
         created_at:
           type: string
           format: date-time
 
-    # Request/Response Schemas
     CreateTransactionRequest:
       type: object
       required:
@@ -133,6 +155,10 @@ components:
 
     CreateBillResponse:
       type: object
+      required:
+        - bill_id
+        - payment_url
+        - expires_at
       properties:
         bill_id:
           type: string
@@ -145,14 +171,23 @@ components:
           type: string
           format: date-time
 
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+
 security:
   - BearerAuth: []
 
 paths:
-  # --- Project ---
-  /project:
+  # --- Me ---
+  /me:
     get:
-      tags: [Project]
+      tags: [Me]
+      operationId: getMe
       summary: 自プロジェクトの情報を取得
       responses:
         '200':
@@ -161,17 +196,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Project'
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
-  /project/transactions:
+  /me/transactions:
     get:
-      tags: [Project]
-      summary: 取引履歴を取得
+      tags: [Me]
+      operationId: getMyTransactions
+      summary: 自プロジェクトの取引履歴を取得
       parameters:
         - name: limit
           in: query
           schema:
             type: integer
             default: 20
+            maximum: 100
         - name: cursor
           in: query
           schema:
@@ -196,11 +239,67 @@ paths:
                   next_cursor:
                     type: string
                     description: 次のページを取得するためのカーソル (存在しない場合は未設定)
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /me/bills:
+    get:
+      tags: [Me]
+      operationId: getMyBills
+      summary: 自プロジェクトが作成した請求一覧を取得
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PENDING, COMPLETED, REJECTED, FAILED]
+            description: ステータスでフィルタリング
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: cursor
+          in: query
+          schema:
+            type: string
+            description: |
+              続きを取得するためのカーソル
+              前回のレスポンスの next_cursor に含まれる値を指定します。
+              初回リクエスト時は未指定とします。
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Bill'
+                  next_cursor:
+                    type: string
+                    description: 次のページを取得するためのカーソル (存在しない場合は未設定)
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   # --- Transactions ---
   /transactions:
     post:
       tags: [Transactions]
+      operationId: createTransaction
       summary: ユーザーへ送金する (配布・賞与など)
       requestBody:
         required: true
@@ -216,12 +315,29 @@ paths:
               schema:
                 $ref: '#/components/schemas/Transaction'
         '400':
-          description: 残高不足など
+          description: リクエストエラー（残高不足、ユーザー不在など）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: 重複リクエスト
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   # --- Bills ---
   /bills:
     post:
       tags: [Bills]
+      operationId: createBill
       summary: ユーザーへの請求を作成する
       description: レスポンスに含まれる payment_url へユーザーを誘導してください
       requestBody:
@@ -237,17 +353,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateBillResponse'
+        '400':
+          description: リクエストエラー（ユーザー不在、金額不正など）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
+  # 変更点: {bill_id} -> {billId}
   /bills/{billId}:
     get:
       tags: [Bills]
+      operationId: getBill
       summary: 請求のステータスを確認する
       parameters:
-        - name: billId
+        - name: billId  # 変更点
           in: path
           required: true
           schema:
             type: string
+            format: uuid
       responses:
         '200':
           description: OK
@@ -255,3 +386,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Bill'
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 請求が見つからない
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # 変更点: {bill_id} -> {billId}
+  /bills/{billId}/cancel:
+    post:
+      tags: [Bills]
+      operationId: cancelBill
+      summary: 未処理の請求をキャンセルする
+      description: PENDING状態の請求のみキャンセル可能
+      parameters:
+        - name: billId  # 変更点
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: キャンセル完了
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 請求が見つからない
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: 請求は既に処理済み
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
