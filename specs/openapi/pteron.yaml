@@ -37,9 +37,9 @@ components:
         - id
         - type
         - amount
-        - project_id
-        - user_id
-        - created_at
+        - projectId
+        - userId
+        - createdAt
       properties:
         id:
           type: string
@@ -54,19 +54,19 @@ components:
             取引の種類
             - TRANSFER: プロジェクトからユーザーへの送金 (Project -> User)
             - BILL_PAYMENT: プロジェクトへの請求の支払い (User -> Project)
-        user_id:
+        userId:
           type: string
           format: uuid
           description: 取引相手のユーザーID (UUID)
-        user_name:
+        userName:
           type: string
           description: 取引相手のユーザー名 (traP ID)
-        project_id:
+        projectId:
           type: string
           format: uuid
         description:
           type: string
-        created_at:
+        createdAt:
           type: string
           format: date-time
 
@@ -75,9 +75,9 @@ components:
       required:
         - id
         - amount
-        - user_id
+        - userId
         - status
-        - created_at
+        - createdAt
       properties:
         id:
           type: string
@@ -85,11 +85,11 @@ components:
         amount:
           type: integer
           format: int64
-        user_id:
+        userId:
           type: string
           format: uuid
           description: 請求対象のユーザーID (UUID)
-        user_name:
+        userName:
           type: string
           description: 請求対象のユーザー名 (traP ID)
         description:
@@ -110,10 +110,10 @@ components:
     CreateTransactionRequest:
       type: object
       required:
-        - to_user
+        - toUser
         - amount
       properties:
-        to_user:
+        toUser:
           type: string
           description: 送金先のユーザー名 (traP ID)
         amount:
@@ -122,7 +122,7 @@ components:
           minimum: 1
         description:
           type: string
-        request_id:
+        requestId:
           type: string
           format: uuid
           description: 冪等性キー (必須推奨)
@@ -130,12 +130,12 @@ components:
     CreateBillRequest:
       type: object
       required:
-        - target_user
+        - targetUser
         - amount
-        - success_url
-        - cancel_url
+        - successUrl
+        - cancelUrl
       properties:
-        target_user:
+        targetUser:
           type: string
           description: 請求先のユーザー名 (traP ID)
         amount:
@@ -144,11 +144,11 @@ components:
           minimum: 1
         description:
           type: string
-        success_url:
+        successUrl:
           type: string
           format: uri
           description: 決済成功時のリダイレクト先URL
-        cancel_url:
+        cancelUrl:
           type: string
           format: uri
           description: 決済キャンセル/拒否時のリダイレクト先URL
@@ -156,18 +156,18 @@ components:
     CreateBillResponse:
       type: object
       required:
-        - bill_id
-        - payment_url
-        - expires_at
+        - billId
+        - paymentUrl
+        - expiresAt
       properties:
-        bill_id:
+        billId:
           type: string
           format: uuid
-        payment_url:
+        paymentUrl:
           type: string
           format: uri
           description: ユーザーをリダイレクトさせる決済確認ページのURL
-        expires_at:
+        expiresAt:
           type: string
           format: date-time
 
@@ -236,7 +236,7 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Transaction'
-                  next_cursor:
+                  nextCursor:
                     type: string
                     description: 次のページを取得するためのカーソル (存在しない場合は未設定)
         '401':
