@@ -202,7 +202,7 @@ paths:
               schema:
                 type: object
                 required:
-                  - redirect_url
+                  - redirectUrl
                 properties:
                   redirectUrl:
                     type: string
@@ -258,7 +258,7 @@ paths:
             type: string
             description: |
               続きを取得するためのカーソル
-              前回のレスポンスの next_cursor に含まれる値を指定します。
+              前回のレスポンスの nextCursor に含まれる値を指定します。
               初回リクエスト時は未指定とします。
       responses:
         '200':
@@ -309,7 +309,7 @@ paths:
             type: string
             description: |
               続きを取得するためのカーソル
-              前回のレスポンスの next_cursor に含まれる値を指定します。
+              前回のレスポンスの nextCursor に含まれる値を指定します。
               初回リクエスト時は未指定とします。
       responses:
         '200':
@@ -324,7 +324,7 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Transaction'
-                  next_cursor:
+                  nextCursor:
                     type: string
                     description: 次のページを取得するためのカーソル
 
@@ -360,7 +360,7 @@ paths:
             type: string
             description: |
               続きを取得するためのカーソル
-              前回のレスポンスの next_cursor に含まれる値を指定します。
+              前回のレスポンスの nextCursor に含まれる値を指定します。
               初回リクエスト時は未指定とします。
       responses:
         '200':
@@ -375,7 +375,7 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Transaction'
-                  next_cursor:
+                  nextCursor:
                     type: string
                     description: 次のページを取得するためのカーソル
 
@@ -574,7 +574,7 @@ paths:
             type: string
             description: |
               続きを取得するためのカーソル
-              前回のレスポンスの next_cursor に含まれる値を指定します。
+              前回のレスポンスの nextCursor に含まれる値を指定します。
               初回リクエスト時は未指定とします。
       responses:
         '200':
@@ -655,7 +655,7 @@ paths:
             type: string
             description: |
               続きを取得するためのカーソル
-              前回のレスポンスの next_cursor に含まれる値を指定します。
+              前回のレスポンスの nextCursor に含まれる値を指定します。
               初回リクエスト時は未指定とします。
       responses:
         '200':
@@ -684,7 +684,7 @@ paths:
                           description: 24hoursなら、前の24hoursでの順位との比較
                         project:
                           $ref: '#/components/schemas/Project'
-                  next_cursor:
+                  nextCursor:
                     type: string
                     description: 次のページを取得するためのカーソル
 
@@ -1279,9 +1279,9 @@ paths:
           application/json:
             schema:
               type: object
-              required: [user_id]
+              required: [userId]
               properties:
-                user_id:
+                userId:
                   type: string
       responses:
         '204':
