@@ -79,7 +79,7 @@ components:
           format: uuid
         type:
           type: string
-          enum: [TRANSFER, BILL_PAYMENT]
+          enum: [TRANSFER, BILL_PAYMENT, SYSTEM]
           description: |
             取引の種類
             - TRANSFER: プロジェクトからユーザーへの送金 (Project -> User)
