@@ -70,8 +70,6 @@ components:
         - id
         - type
         - amount
-        - project
-        - user
         - createdAt
       properties:
         id:
