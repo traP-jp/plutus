@@ -49,11 +49,12 @@ components:
           format: int64
         type:
           type: string
-          enum: [TRANSFER, BILL_PAYMENT]
+          enum: [TRANSFER, BILL_PAYMENT, SYSTEM]
           description: |
             取引の種類
             - TRANSFER: プロジェクトからユーザーへの送金 (Project -> User)
             - BILL_PAYMENT: プロジェクトへの請求の支払い (User -> Project)
+            - SYSTEM: システムからプロジェクトorユーザーへの支払い
         userId:
           type: string
           format: uuid
