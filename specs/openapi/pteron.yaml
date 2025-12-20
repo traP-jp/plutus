@@ -6,7 +6,7 @@ info:
     プロジェクト開発者向けの外部公開API。
     アクセストークンによるBearer認証が必要。
 servers:
-  - url: /v1
+  - url: /api/v1
 components:
   securitySchemes:
     BearerAuth:
