@@ -205,8 +205,6 @@ paths:
                   redirectUrl:
                     type: string
                     format: uri
-        '400':
-          description: 残高不足など
         '409':
           description: 既に処理済み
 
