@@ -215,6 +215,7 @@ paths:
       tags: [Me]
       operationId: declineBill
       summary: 請求を拒否する
+      description: 成功した場合、プロジェクトが指定したリダイレクトURLを返す
       parameters:
         - name: billId
           in: path
@@ -222,8 +223,18 @@ paths:
           schema:
             type: string
       responses:
-        '204':
+        '200':
           description: 拒否完了
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - redirectUrl
+                properties:
+                  redirectUrl:
+                    type: string
+                    format: uri
         '409':
           description: 既に処理済み
 
